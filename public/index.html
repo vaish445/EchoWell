@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eecowell - Your Student Companion</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap');
+        :root { --primary: #4A6FA5; --secondary: #6B9080; --accent: #A5B4FC; --light: #F8F9FA; --dark: #343A40; }
+        body { font-family: 'Inter', sans-serif; background-color: #F8F9FA; color: #343A40; line-height: 1.6; }
+        h1, h2, h3, h4 { font-family: 'Playfair Display', serif; }
+        .gradient-bg { background: linear-gradient(135deg, #E6F0F6 0%, #F5F3FF 50%, #F0FDFA 100%); }
+        .glass-card { background-color: rgba(255, 255, 255, 0.7); backdrop-filter: blur(10px); border-radius: 1.5rem; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08); transition: all 0.3s ease; }
+        .glass-card:hover { box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12); transform: translateY(-5px); }
+        .articles-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 2rem; }
+        .article-card { transition: transform 0.3s, box-shadow 0.3s; border-radius: 1.5rem; overflow: hidden; height: 100%; display: flex; flex-direction: column; }
+        .article-card:hover { transform: translateY(-8px); box-shadow: 0 15px 30px rgba(0,0,0,0.12); }
+        .modal-bg { background-color: rgba(0, 0, 0, 0.6); display: none; z-index: 100; }
+        .modal-content { animation: fadeInScale 0.3s ease-out; border-radius: 1.5rem; max-height: 90vh; }
+        @keyframes fadeInScale { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+        .category-tag { display: inline-block; padding: 0.25rem 0.75rem; border-radius: 1rem; font-size: 0.75rem; font-weight: 500; margin-right: 0.5rem; margin-bottom: 0.5rem; }
+        .anxiety { background-color: #FEE2E2; color: #B91C1C; }
+        .depression { background-color: #DBEAFE; color: #1E40AF; }
+        .stress { background-color: #FEF3C7; color: #92400E; }
+        .social { background-color: #F3E8FF; color: #6B21A8; }
+        .btn-primary { background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%); color: white; padding: 0.75rem 1.5rem; border-radius: 2rem; font-weight: 500; transition: all 0.3s ease; box-shadow: 0 4px 6px rgba(74, 111, 165, 0.2); }
+        .btn-primary:hover { box-shadow: 0 8px 15px rgba(74, 111, 165, 0.3); transform: translateY(-2px); }
+    </style>
+</head>
+<body class="gradient-bg">
+    <div class="min-h-screen flex flex-col items-center py-12 px-4">
+
+        <!-- Navigation Bar -->
+        <nav class="w-full max-w-7xl flex justify-between items-center py-4 px-6 mb-8 rounded-full glass-card">
+            <div class="flex items-center space-x-8">
+                <a href="#" class="text-xl font-bold text-gray-800 flex items-center">
+                    <i class="fas fa-user-friends mr-2 text-blue-600"></i> Eecowell
+                </a>
+                <a href="#about-section" class="text-gray-600 hover:text-gray-900 transition-colors">About</a>
+                <a href="#articles-section" class="text-gray-600 hover:text-gray-900 transition-colors">Resources</a>
+                <a href="#screening-section" class="text-gray-600 hover:text-gray-900 transition-colors">Self-Assessment</a>
+            </div>
+            <div class="flex items-center space-x-4">
+                <a href="/login" class="text-gray-600 hover:text-gray-900 transition-colors font-medium">Login</a>
+                <a href="/register" class="btn-primary">Register</a>
+            </div>
+        </nav>
+
+        <div class="w-full max-w-7xl">
+
+            <!-- Welcome Section -->
+            <section class="text-center py-16">
+                <h1 class="text-5xl md:text-6xl font-extrabold text-gray-900 mb-4">Your Journey to Mental Wellness</h1>
+                <p class="text-xl text-gray-600 max-w-3xl mx-auto mb-8">Find support, resources, and compassionate guidance for your mental health journey.</p>
+            </section>
+
+            <!-- About Section -->
+            <section id="about-section" class="w-full py-12 glass-card p-8 mb-16">
+                <div class="flex flex-col md:flex-row items-center">
+                    <div class="md:w-1/2 mb-8 md:mb-0">
+                        <h2 class="text-3xl font-bold text-gray-800 mb-4">About Mindful Wellness</h2>
+                        <p class="text-gray-600 mb-4">We're dedicated to providing accessible mental health resources and support to everyone. Our mission is to break down barriers to mental healthcare through technology and compassion.</p>
+                        <p class="text-gray-600">Whether you're dealing with daily stress or more significant challenges, we're here to help you find your path to wellness.</p>
+                    </div>
+                    <div class="md:w-1/2 flex justify-center">
+                        <div class="relative">
+                            <div class="w-64 h-64 bg-blue-100 rounded-full flex items-center justify-center">
+                                <i class="fas fa-heart text-blue-500 text-7xl"></i>
+                            </div>
+                            <div class="absolute -bottom-5 -right-5 w-32 h-32 bg-green-100 rounded-full flex items-center justify-center">
+                                <i class="fas fa-hands-helping text-green-500 text-4xl"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Articles Section -->
+            <section id="articles-section" class="w-full py-8 mb-16">
+                <div class="text-center mb-12">
+                    <h2 class="text-3xl font-bold text-gray-800 mb-2">Mental Health Resources</h2>
+                    <p class="text-gray-600 max-w-2xl mx-auto">Explore our comprehensive guides to understand and manage various mental health challenges</p>
+                </div>
+                <div class="articles-grid px-4 sm:px-0">
+                    <!-- Article cards will be injected here -->
+                </div>
+            </section>
+
+            <!-- Screening Tool Section -->
+            <section id="screening-section" class="w-full glass-card p-8 mb-16">
+                <h2 class="text-3xl font-bold text-center text-gray-800 mb-2">Mental Health Self-Assessment</h2>
+                <p class="text-center text-gray-600 mb-8 max-w-3xl mx-auto">This is a quick, informal screening based on the GAD-7 questionnaire to help you reflect on your feelings of anxiety. This is not a diagnostic tool. Please consult a professional for a proper diagnosis.</p>
+                <div id="quiz-container" class="max-w-2xl mx-auto"></div>
+                <div id="quiz-results" class="max-w-2xl mx-auto text-center hidden mt-8"></div>
+            </section>
+
+        </div>
+
+        <!-- Article Modal -->
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            loadArticles();
+            loadQuiz();
+        });
+
+        const articles = [
+            { 
+                id: 'anxiety', 
+                title: 'Understanding Anxiety', 
+                icon: 'fas fa-wind',
+                category: 'anxiety',
+                content: `
+                    <h2 class="text-3xl font-bold mb-6 text-center text-blue-600">Understanding Anxiety</h2>
+                    <p class="text-lg mb-6">Anxiety is a natural response to stress, characterized by feelings of worry, nervousness, or unease. When these feelings become persistent, excessive, and interfere with daily life, they may indicate an anxiety disorder.</p>
+                    <h3 class="text-2xl font-semibold mb-4 mt-8 text-gray-800">Common Symptoms</h3>
+                    <ul class="list-disc list-inside space-y-2 mb-6 pl-4">
+                        <li>Excessive worry about everyday situations</li>
+                        <li>Restlessness or feeling on edge</li>
+                        <li>Difficulty concentrating</li>
+                        <li>Sleep disturbances</li>
+                        <li>Physical symptoms like rapid heartbeat or sweating</li>
+                    </ul>
+                `
+            },
+            {
+                id: 'depression',
+                title: 'Coping with Depression',
+                icon: 'fas fa-cloud',
+                category: 'depression',
+                content: `
+                    <h2 class="text-3xl font-bold mb-6 text-center text-blue-600">Coping with Depression</h2>
+                    <p class="text-lg mb-6">Depression is more than just feeling sad—it's a serious mental health condition that affects how you think, feel, and handle daily activities. It often requires long-term treatment, but most people with depression feel better with medication, therapy, or both.</p>
+                `
+            },
+            {
+                id: 'stress',
+                title: 'Managing Stress',
+                icon: 'fas fa-weight',
+                category: 'stress',
+                content: `
+                    <h2 class="text-3xl font-bold mb-6 text-center text-blue-600">Managing Stress Effectively</h2>
+                    <p class="text-lg mb-6">Stress is your body's response to challenges or demands. While acute stress can be motivating, chronic stress can negatively impact both physical and mental health. Learning to manage stress is essential for overall wellbeing.</p>
+                `
+            },
+            {
+                id: 'social',
+                title: 'Balancing Social Life',
+                icon: 'fas fa-users',
+                category: 'social',
+                content: `
+                    <h2 class="text-3xl font-bold mb-6 text-center text-blue-600">Balancing Social Life</h2>
+                    <p class="text-lg mb-6">Finding the right balance between your academic responsibilities and your social life is a common challenge for students. Here's how you can enjoy both without feeling overwhelmed.</p>
+                `
+            },
+        ];
+
+        function loadArticles() {
+            const container = document.querySelector('.articles-grid');
+            articles.forEach(article => {
+                const card = document.createElement('div');
+                card.className = 'article-card glass-card';
+                card.innerHTML = `
+                    <div class="p-6 flex flex-col items-center text-center h-full">
+                        <div class="w-20 h-20 rounded-full flex items-center justify-center mb-4 ${article.category}">
+                            <i class="${article.icon} text-3xl"></i>
+                        </div>
+                        <h3 class="text-xl font-semibold text-gray-800 mb-2">${article.title}</h3>
+                        <p class="text-sm text-gray-500 mb-4">Learn effective strategies to manage this condition</p>
+                        <span class="category-tag ${article.category}">${article.category.charAt(0).toUpperCase() + article.category.slice(1)}</span>
+                        <div class="mt-auto pt-4">
+                            <button class="text-blue-600 font-medium hover:text-blue-800 transition-colors">
+                                Read More <i class="fas fa-arrow-right ml-1"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+                card.addEventListener('click', () => showArticleModal(article));
+                container.appendChild(card);
+            });
+        }
+
+        function showArticleModal(article) {
+            const modal = document.getElementById('article-modal');
+            const modalBody = document.getElementById('modal-body');
+            modalBody.innerHTML = article.content;
+            modal.style.display = 'flex';
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('article-modal');
+            modal.style.display = 'none';
+        }
+
+        window.addEventListener('click', (e) => {
+            const modal = document.getElementById('article-modal');
+            if (e.target === modal) {
+                closeModal();
+            }
+        });
+
+        const quizQuestions = [
+            { question: "Feeling nervous, anxious, or on edge?", name: "q1" },
+            { question: "Not being able to stop or control worrying?", name: "q2" },
+            { question: "Worrying too much about different things?", name: "q3" },
+            { question: "Trouble relaxing?", name: "q4" },
+            { question: "Being so restless that it is hard to sit still?", name: "q5" },
+            { question: "Becoming easily annoyed or irritable?", name: "q6" },
+            { question: "Feeling afraid as if something awful might happen?", name: "q7" },
+        ];
+
+        function loadQuiz() {
+            const container = document.getElementById('quiz-container');
+            const form = document.createElement('form');
+            form.id = 'quiz-form';
+
+            quizQuestions.forEach((item, index) => {
+                const questionDiv = document.createElement('div');
+                questionDiv.className = 'mb-6';
+                let questionHTML = `<p class="font-semibold text-lg mb-2">${index + 1}. ${item.question}</p><div class="flex justify-around">`;
+                const options = ["Not at all", "Several days", "More than half the days", "Nearly every day"];
+                options.forEach((option, value) => {
+                    questionHTML += `
+                        <label class="flex flex-col items-center">
+                            <input type="radio" name="${item.name}" value="${value}" required class="mb-1">
+                            <span class="text-sm">${option}</span>
+                        </label>`;
+                });
+                questionHTML += '</div>';
+                questionDiv.innerHTML = questionHTML;
+                form.appendChild(questionDiv);
+            });
+
+            const submitButton = document.createElement('button');
+            submitButton.type = 'submit';
+            submitButton.className = 'w-full btn-primary mt-6';
+            submitButton.textContent = 'See My Results';
+            form.appendChild(submitButton);
+
+            container.appendChild(form);
+
+            form.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const formData = new FormData(form);
+                let score = 0;
+                for (let value of formData.values()) {
+                    score += parseInt(value, 10);
+                }
+                showQuizResults(score);
+            });
+        }
+
+        function showQuizResults(score) {
+            const resultsContainer = document.getElementById('quiz-results');
+            const quizContainer = document.getElementById('quiz-container');
+            let resultText = '';
+            let adviceText = '';
+
+            if (score <= 4) {
+                resultText = "Minimal Anxiety";
+                adviceText = "Your responses suggest a minimal level of anxiety. It's great that you're in tune with your mental health.";
+            } else if (score <= 9) {
+                resultText = "Mild Anxiety";
+                adviceText = "Your responses suggest a mild level of anxiety. Exploring some of the resources on this page might be helpful.";
+            } else if (score <= 14) {
+                resultText = "Moderate Anxiety";
+                adviceText = "Your responses suggest a moderate level of anxiety. It might be beneficial to talk to someone about how you're feeling. Consider reaching out to your university's counseling services.";
+            } else {
+                resultText = "Severe Anxiety";
+                adviceText = "Your responses suggest a severe level of anxiety. It is highly recommended that you speak with a mental health professional. Your university's counseling services are a great place to start.";
+            }
+
+            resultsContainer.innerHTML = `
+                <h3 class="text-2xl font-bold text-gray-800 mb-2">Result: ${resultText}</h3>
+                <p class="text-gray-600 max-w-xl mx-auto">${adviceText}</p>
+                <p class="text-sm text-gray-500 mt-4"><b>Disclaimer:</b> This is not a diagnosis. This tool is for informational purposes only. Please consult a healthcare professional for any health concerns.</p>
+            `;
+
+            quizContainer.classList.add('hidden');
+            resultsContainer.classList.remove('hidden');
+        }
+
+    </script>
+</body>
+</html>

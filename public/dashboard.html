@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Eecowell</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap');
+        :root { --primary: #4A6FA5; --secondary: #6B9080; --accent: #A5B4FC; --light: #F8F9FA; --dark: #343A40; }
+        body { font-family: 'Inter', sans-serif; background-color: #F8F9FA; color: #343A40; line-height: 1.6; }
+        h1, h2, h3, h4 { font-family: 'Playfair Display', serif; }
+        .gradient-bg { background: linear-gradient(135deg, #E6F0F6 0%, #F5F3FF 100%); }
+        .glass-card { background-color: rgba(255, 255, 255, 0.8); backdrop-filter: blur(12px); border-radius: 1.5rem; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08); }
+        .tab-button { padding: 0.5rem 1rem; font-weight: 500; cursor: pointer; transition: all 0.3s ease; border-radius: 2rem; border: 1px solid transparent; }
+        .tab-button.active { background: white; color: var(--primary); box-shadow: 0 4px 10px rgba(0,0,0,0.1); border-color: var(--primary); }
+        .tab-content { display: none; animation: fadeIn 0.5s; }
+        .tab-content.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .message { max-width: 75%; padding: 0.75rem 1.25rem; border-radius: 1.5rem; margin-bottom: 0.5rem; position: relative; }
+        .user-message { background: linear-gradient(135deg, #E2E8F0 0%, #CBD5E1 100%); align-self: flex-end; border-bottom-right-radius: 0.5rem; }
+        .bot-message { background: linear-gradient(135deg, #D1E5E1 0%, #B2D3C2 100%); align-self: flex-start; border-bottom-left-radius: 0.5rem; }
+        .chat-container { height: 60vh; display: flex; flex-direction: column; border-radius: 1.5rem; overflow: hidden; box-shadow: 0 15px 30px rgba(0,0,0,0.08); }
+        .share-card { background: rgba(255, 255, 255, 0.6); padding: 1rem; border-radius: 1rem; margin-bottom: 1rem; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        .btn-primary { background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%); color: white; padding: 0.75rem 1.5rem; border-radius: 2rem; font-weight: 500; transition: all 0.3s ease; box-shadow: 0 4px 6px rgba(74, 111, 165, 0.2); }
+        .mood-btn { font-size: 2rem; transition: transform 0.2s; }
+        .mood-btn:hover, .mood-btn.selected { transform: scale(1.2); }
+    </style>
+</head>
+<body class="gradient-bg">
+    <div id="main-content" class="min-h-screen flex flex-col items-center py-12 px-4 hidden">
+        <nav class="w-full max-w-7xl flex justify-between items-center py-4 px-6 mb-8">
+            <a href="#" class="text-2xl font-bold text-gray-800 flex items-center">
+                <i class="fas fa-user-friends mr-2 text-blue-600"></i> Eecowell Dashboard
+            </a>
+            <button id="logout-btn" class="font-medium text-gray-600 hover:text-blue-600 transition-colors">Logout <i class="fas fa-sign-out-alt ml-1"></i></button>
+        </nav>
+
+        <div class="w-full max-w-7xl">
+            <div class="mb-8 flex justify-center flex-wrap gap-2 p-2 bg-gray-200/50 rounded-full glass-card w-fit mx-auto">
+                <button class="tab-button active" data-tab="companion">AI Companion</button>
+                <button class="tab-button" data-tab="first-aid">First-Aid</button>
+                <button class="tab-button" data-tab="mood-tracker">Mood Tracker</button>
+                <button class="tab-button" data-tab="resources">Resources</button>
+                <button class="tab-button" data-tab="booking">Booking</button>
+                <button class="tab-button" data-tab="peer-support">Peer Support</button>
+                <button class="tab-button" data-tab="sharing-wall">Sharing Wall</button>
+            </div>
+
+            <div id="tab-container">
+                <div id="companion" class="tab-content active"></div>
+                <div id="first-aid" class="tab-content"></div>
+                <div id="mood-tracker" class="tab-content"></div>
+                <div id="resources" class="tab-content"></div>
+                <div id="booking" class="tab-content"></div>
+                <div id="peer-support" class="tab-content"></div>
+                <div id="sharing-wall" class="tab-content"></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="new-post-modal" class="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center hidden z-50">
+        <div class="bg-white rounded-lg p-8 w-full max-w-lg">
+            <h2 class="text-2xl font-bold mb-4">Create a New Post</h2>
+            <input type="text" id="post-title" class="w-full p-2 border rounded-md mb-4" placeholder="Post Title">
+            <textarea id="post-content" class="w-full p-2 border rounded-md" rows="6" placeholder="Share your thoughts..."></textarea>
+            <div class="mt-4 flex justify-end space-x-4">
+                <button onclick="closeNewPostModal()" class="text-gray-600">Cancel</button>
+                <button onclick="submitNewPost()" class="btn-primary">Submit</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const GEMINI_API_KEY = 'AIzaSyDWMvHTNdwMqEXhmA_xTcJpmw2orsIeJF0';
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                window.location.href = '/login';
+                return;
+            }
+            
+            document.getElementById('main-content').classList.remove('hidden');
+            
+            const tabs = document.querySelectorAll('.tab-button');
+            const tabContents = document.querySelectorAll('.tab-content');
+
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    tabs.forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
+                    const target = tab.getAttribute('data-tab');
+                    tabContents.forEach(tc => {
+                        tc.classList.remove('active');
+                        if (tc.id === target) {
+                            tc.classList.add('active');
+                        }
+                    });
+                });
+            });
+
+            document.getElementById('logout-btn').addEventListener('click', () => {
+                localStorage.removeItem('token');
+                window.location.href = '/login';
+            });
+
+            loadTabContent();
+        });
+
+        function loadTabContent() {
+            loadCompanionTab();
+            loadFirstAidTab();
+            loadMoodTrackerTab();
+            loadResourcesTab();
+            loadBookingTab();
+            loadPeerSupportTab();
+            loadSharingWallTab();
+        }
+
+        async function getGeminiResponse(prompt, model = 'gemini-1.5-flash-latest') {
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_API_KEY}`;
+            try {
+                const response = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] }) });
+                if (!response.ok) { const errorData = await response.json(); console.error('Error from Gemini API:', errorData); return `I'm having trouble connecting. The API returned an error: ${errorData.error.message}`; }
+                const data = await response.json();
+                return data.candidates[0].content.parts[0].text;
+            } catch (error) {
+                console.error('Error fetching from Gemini API:', error);
+                return "I'm having a little trouble connecting right now. Please try again later.";
+            }
+        }
+
+        function loadCompanionTab() {
+            const container = document.getElementById('companion');
+            container.innerHTML = `<section class="w-full glass-card p-8"><h2 class="text-3xl font-bold text-center text-gray-800 mb-2">Chat with Your Companion</h2><p class="text-center text-gray-600 mb-6">I'm here to listen about your classes, friends, or anything on your mind.</p><div class="chat-container bg-gray-50 border border-gray-200"><div id="chat-box-companion" class="flex-1 overflow-y-auto p-4 flex flex-col"></div><div class="p-4 bg-white border-t border-gray-200 flex items-center"><input type="text" id="user-input-companion" class="flex-1 p-3 rounded-full bg-gray-100" placeholder="How's your day going?" autocomplete="off"><button id="send-btn-companion" class="ml-4 p-3 bg-blue-600 text-white rounded-full"><i class="fas fa-paper-plane"></i></button></div></div></section>`;
+            setupChatbot('companion', `You are an empathetic and supportive student companion AI...`);
+        }
+
+        function loadFirstAidTab() {
+            const container = document.getElementById('first-aid');
+            container.innerHTML = `<section class="w-full glass-card p-8"><h2 class="text-3xl font-bold text-center text-gray-800 mb-2">AI-Guided First-Aid</h2><p class="text-center text-gray-600 mb-6">In a moment of distress? Let's walk through it together...</p><div class="chat-container bg-gray-50 border border-gray-200"><div id="chat-box-first-aid" class="flex-1 overflow-y-auto p-4 flex flex-col"></div><div class="p-4 bg-white border-t border-gray-200 flex items-center"><input type="text" id="user-input-first-aid" class="flex-1 p-3 rounded-full bg-gray-100" placeholder="Tell me what's happening..." autocomplete="off"><button id="send-btn-first-aid" class="ml-4 p-3 bg-blue-600 text-white rounded-full"><i class="fas fa-paper-plane"></i></button></div></div><div class="mt-4 text-center space-x-4"><button class="first-aid-btn bg-blue-100 text-blue-700 py-2 px-4 rounded-full">Grounding Exercise</button><button class="first-aid-btn bg-green-100 text-green-700 py-2 px-4 rounded-full">Breathing Technique</button></div></section>`;
+            setupChatbot('first-aid', `You are an AI providing immediate, calming, first-aid support...`, true);
+        }
+
+        function loadResourcesTab() {
+            const container = document.getElementById('resources');
+            container.innerHTML = `<div class="glass-card p-8"><h2 class="text-3xl font-bold text-center text-gray-800 mb-8">Psychoeducational Resource Hub</h2><div class="mb-12"><h3 class="text-2xl font-semibold mb-4">Featured Videos</h3><div class="grid grid-cols-1 md:grid-cols-2 gap-8"><div class="aspect-w-16 aspect-h-9"><iframe src="https://www.youtube.com/embed/O-6f5wQXSu8" frameborder="0" allowfullscreen class="rounded-lg shadow-lg"></iframe></div><div class="aspect-w-16 aspect-h-9"><iframe src="https://www.youtube.com/embed/z6X5oEig1wA" frameborder="0" allowfullscreen class="rounded-lg shadow-lg"></iframe></div></div></div><div class="mb-12"><h3 class="text-2xl font-semibold mb-4">Guided Audio</h3><div class="space-y-4"><div class="bg-white p-4 rounded-lg shadow flex items-center justify-between"><span>5-Minute Mindfulness Meditation</span><button class="text-blue-600"><i class="fas fa-play-circle text-2xl"></i></button></div><div class="bg-white p-4 rounded-lg shadow flex items-center justify-between"><span>10-Minute Guided Body Scan</span><button class="text-blue-600"><i class="fas fa-play-circle text-2xl"></i></button></div></div></div><div><h3 class="text-2xl font-semibold mb-4">Wellness Guides</h3><div class="grid grid-cols-1 md:grid-cols-3 gap-6"><div class="bg-white p-6 rounded-lg shadow hover:shadow-xl transition-shadow"><h4 class="font-bold">Understanding CBT</h4><p class="text-sm">A brief introduction to Cognitive Behavioral Therapy.</p></div><div class="bg-white p-6 rounded-lg shadow hover:shadow-xl transition-shadow"><h4 class="font-bold">Improving Sleep Hygiene</h4><p class="text-sm">Tips for a more restful night's sleep.</p></div><div class="bg-white p-6 rounded-lg shadow hover:shadow-xl transition-shadow"><h4 class="font-bold">The Mind-Body Connection</h4><p class="text-sm">How physical health impacts mental wellness.</p></div></div></div></div>`;
+        }
+
+        function loadBookingTab() {
+            const container = document.getElementById('booking');
+            container.innerHTML = `<div class="glass-card p-8"><h2 class="text-3xl font-bold text-center text-gray-800 mb-8">Book an Appointment</h2><div class="grid grid-cols-1 md:grid-cols-3 gap-8"><div class="md:col-span-1"><h3 class="text-xl font-semibold mb-4">1. Select a Counselor</h3><div class="space-y-4" id="counselor-list"></div></div><div class="md:col-span-2"><h3 class="text-xl font-semibold mb-4">2. Select a Date & Time</h3><div class="bg-white rounded-lg shadow p-4"><div id="calendar-container"></div><div id="time-slots-container" class="mt-4 hidden"></div></div></div></div></div>`;
+            setupBooking();
+        }
+
+        function loadPeerSupportTab() {
+            const container = document.getElementById('peer-support');
+            container.innerHTML = `<div class="glass-card p-8"><div class="flex justify-between items-center mb-8"><h2 class="text-3xl font-bold text-gray-800">Peer Support Forum</h2><button onclick="openNewPostModal()" class="btn-primary">Create New Post</button></div><div id="forum-content"></div></div>`;
+            showForumThreads();
+        }
+
+        function loadSharingWallTab() {
+            const container = document.getElementById('sharing-wall');
+            container.innerHTML = `<section class="w-full glass-card p-8"><h2 class="text-3xl font-bold text-center text-gray-800 mb-2">Anonymous Sharing Wall</h2><div class="max-w-2xl mx-auto"><div class="flex items-center mb-4"><input type="text" id="share-input" class="flex-1 p-3 rounded-full bg-gray-100" placeholder="Share something anonymously..."><button id="share-btn" class="ml-4 btn-primary">Share</button></div><div id="share-wall-content" class="mt-6 max-h-80 overflow-y-auto p-4 bg-gray-50 rounded-lg"></div></div></section>`;
+            setupSharingWall();
+        }
+        
+        function loadMoodTrackerTab() {
+            const container = document.getElementById('mood-tracker');
+            container.innerHTML = `<div class="glass-card p-8"><h2 class="text-3xl font-bold text-center text-gray-800 mb-8">How are you feeling today?</h2><div class="flex justify-around mb-8"><button class="mood-btn" data-mood="5">😊</button><button class="mood-btn" data-mood="4">🙂</button><button class="mood-btn" data-mood="3">😐</button><button class="mood-btn" data-mood="2">😕</button><button class="mood-btn" data-mood="1">😞</button></div><div class="text-center mb-8"><button id="log-mood-btn" class="btn-primary" disabled>Log Mood</button></div><div><h3 class="text-2xl font-semibold mb-4 text-center">Your Mood History</h3><canvas id="mood-chart"></canvas></div></div>`;
+            setupMoodTracker();
+        }
+
+        function setupChatbot(type, persona, isFirstAid = false) {
+            const chatBox = document.getElementById(`chat-box-${type}`);
+            const userInput = document.getElementById(`user-input-${type}`);
+            const sendBtn = document.getElementById(`send-btn-${type}`);
+            const appendMessage = (text, sender) => { const messageDiv = document.createElement('div'); messageDiv.className = `message ${sender === 'user' ? 'user-message' : 'bot-message'}`; messageDiv.innerHTML = `<i class="fas ${sender === 'user' ? 'fa-user' : 'fa-robot'} mr-2"></i> ${text}`; chatBox.appendChild(messageDiv); chatBox.scrollTop = chatBox.scrollHeight; };
+            const handleChat = async (message) => { if (!message) return; appendMessage(message, 'user'); userInput.value = ''; const botResponse = await getGeminiResponse(`${persona} The user says: "${message}"`); appendMessage(botResponse, 'bot'); };
+            sendBtn.addEventListener('click', () => handleChat(userInput.value.trim()));
+            userInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') handleChat(userInput.value.trim()); });
+            if (isFirstAid) { document.querySelectorAll('.first-aid-btn').forEach(btn => { btn.addEventListener('click', () => handleChat(btn.textContent)); }); appendMessage("If you are in immediate danger... or select an exercise below.", 'bot'); } else { appendMessage("Hey there! How are things going? ...I'm here to listen.", 'bot'); }
+        }
+
+        function setupSharingWall() {
+            const shareInput = document.getElementById('share-input');
+            const shareBtn = document.getElementById('share-btn');
+            const shareWall = document.getElementById('share-wall-content');
+            const addSharedMessage = (message) => { const messageCard = document.createElement('div'); messageCard.className = 'share-card'; messageCard.textContent = message.text; shareWall.prepend(messageCard); };
+            const loadMessages = async () => { const response = await fetch('/api/shares'); const messages = await response.json(); shareWall.innerHTML = ''; messages.forEach(addSharedMessage); };
+            const postMessage = async () => { const message = shareInput.value.trim(); if (message) { await fetch('/api/shares', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ message }), }); shareInput.value = ''; loadMessages(); } };
+            shareBtn.addEventListener('click', postMessage);
+            shareInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') postMessage(); });
+            loadMessages();
+        }
+        
+        let selectedCounselor, selectedDate;
+        const counselors = [ { name: 'Dr. Anna Freud', specialty: 'Anxiety & Stress' }, { name: 'Dr. Carl Rogers', specialty: 'Depression & Grief' }, { name: 'Dr. B.F. Skinner', specialty: 'Behavioral Therapy' }, ];
+
+        function setupBooking() {
+            const counselorList = document.getElementById('counselor-list');
+            counselors.forEach((c, index) => { const div = document.createElement('div'); div.className = 'p-4 border rounded-lg cursor-pointer hover:bg-blue-50'; div.textContent = `${c.name} - ${c.specialty}`; div.onclick = () => selectCounselor(index, div); counselorList.appendChild(div); });
+            const calendarContainer = document.getElementById('calendar-container');
+            calendarContainer.innerHTML = `<div class="grid grid-cols-7 gap-2 text-center"></div>`;
+            const calendarGrid = calendarContainer.querySelector('.grid');
+            for (let i = 1; i <= 30; i++) { const day = document.createElement('div'); day.className = 'p-2 border rounded-md cursor-pointer hover:bg-gray-200'; day.textContent = i; day.onclick = () => selectDate(i, day); calendarGrid.appendChild(day); }
+        }
+
+        function selectCounselor(index, element) { selectedCounselor = index; document.querySelectorAll('#counselor-list > div').forEach(el => el.classList.remove('bg-blue-100')); element.classList.add('bg-blue-100'); }
+
+        function selectDate(date, element) {
+            selectedDate = date;
+            document.querySelectorAll('#calendar-container .grid > div').forEach(el => el.classList.remove('bg-blue-100'));
+            element.classList.add('bg-blue-100');
+            const timeSlotsContainer = document.getElementById('time-slots-container');
+            timeSlotsContainer.classList.remove('hidden');
+            timeSlotsContainer.innerHTML = '';
+            ['10:00 AM', '11:00 AM', '2:00 PM', '3:00 PM'].forEach(time => { const btn = document.createElement('button'); btn.className = 'bg-green-100 text-green-700 py-2 px-4 rounded-full mr-2 mb-2'; btn.textContent = time; btn.onclick = () => confirmBooking(time); timeSlotsContainer.appendChild(btn); });
+        }
+
+        function confirmBooking(time) { if (selectedCounselor === undefined || !selectedDate) { alert('Please select a counselor and a date first.'); return; } alert(`Booking confirmed with ${counselors[selectedCounselor].name} on Date ${selectedDate} at ${time}. (This is a mockup)`); }
+
+        function showForumThreads() {
+            const forumContent = document.getElementById('forum-content');
+            forumContent.innerHTML = `<div class="space-y-4"><div class="bg-white p-4 rounded-lg shadow cursor-pointer" onclick="showThreadDetail()"><h3 class="font-bold">Struggling with motivation for online classes</h3><p class="text-sm text-gray-500">By: AnonymousUser123 | 5 Replies | Last active: 2 hours ago</p></div><div class="bg-white p-4 rounded-lg shadow cursor-pointer"><h3 class="font-bold">How do you make friends in a new city?</h3><p class="text-sm text-gray-500">By: StudentInNeed | 12 Replies | Last active: 5 hours ago</p></div></div>`;
+        }
+
+        function showThreadDetail() {
+            const forumContent = document.getElementById('forum-content');
+            forumContent.innerHTML = `<button onclick="showForumThreads()" class="text-blue-600 mb-4"><i class="fas fa-arrow-left"></i> Back to all topics</button><div class="bg-white p-6 rounded-lg shadow"><h3 class="text-2xl font-bold mb-2">Struggling with motivation for online classes</h3><p class="text-sm text-gray-500 mb-4">By: AnonymousUser123</p><p>I just can't seem to make myself watch the lectures or do the readings. It feels so isolating and I'm falling behind. Any advice?</p></div><div class="mt-6 space-y-4"><h4 class="text-xl font-semibold">Replies</h4><div class="bg-gray-100 p-4 rounded-lg"><p><b>VolunteerPeer1:</b> I totally get that. What helps me is setting up a dedicated study space...</p></div><div class="bg-gray-100 p-4 rounded-lg"><p><b>AnonymousUser456:</b> Same here. I started doing virtual study sessions with a friend and it made a huge difference.</p></div></div>`;
+        }
+
+        function openNewPostModal() { document.getElementById('new-post-modal').classList.remove('hidden'); }
+        function closeNewPostModal() { document.getElementById('new-post-modal').classList.add('hidden'); }
+        function submitNewPost() { closeNewPostModal(); alert('Your post has been submitted for moderation. (This is a mockup)'); }
+        
+        let selectedMood = null;
+        let moodChart = null;
+
+        function setupMoodTracker() {
+            const moodButtons = document.querySelectorAll('.mood-btn');
+            const logButton = document.getElementById('log-mood-btn');
+
+            moodButtons.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    selectedMood = btn.getAttribute('data-mood');
+                    moodButtons.forEach(b => b.classList.remove('selected'));
+                    btn.classList.add('selected');
+                    logButton.disabled = false;
+                });
+            });
+
+            logButton.addEventListener('click', () => {
+                if (!selectedMood) return;
+                const moodHistory = JSON.parse(localStorage.getItem('moodHistory') || '[]');
+                moodHistory.push({ mood: selectedMood, date: new Date().toISOString().split('T')[0] });
+                localStorage.setItem('moodHistory', JSON.stringify(moodHistory));
+                renderMoodChart();
+                logButton.disabled = true;
+                selectedMood = null;
+                moodButtons.forEach(b => b.classList.remove('selected'));
+            });
+
+            renderMoodChart();
+        }
+
+        function renderMoodChart() {
+            const moodHistory = JSON.parse(localStorage.getItem('moodHistory') || '[]');
+            const labels = moodHistory.map(entry => new Date(entry.date).toLocaleDateString());
+            const data = moodHistory.map(entry => entry.mood);
+
+            const ctx = document.getElementById('mood-chart').getContext('2d');
+            if (moodChart) {
+                moodChart.destroy();
+            }
+            moodChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Mood Level',
+                        data: data,
+                        borderColor: '#4A6FA5',
+                        backgroundColor: 'rgba(74, 111, 165, 0.1)',
+                        fill: true,
+                        tension: 0.3
+                    }]
+                },
+                options: {
+                    scales: { y: { min: 1, max: 5 } }
+                }
+            });
+        }
+
+    </script>
+</body>
+</html>
